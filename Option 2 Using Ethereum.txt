@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract AssetManagement {
+
+    struct Asset {
+        string msisdn;
+        string mpin;
+        uint balance;
+        string status;
+        Transaction[] transactionHistory;
+    }
+
+    struct Transaction {
+        uint amount;
+        string transType;
+        string remarks;
+        uint timestamp;
+    }
+
+    mapping(string => Asset) private assets;
+
+    function createAsset(string memory dealerId, string memory msisdn, string memory mpin, uint balance, string memory status) public {
+        Asset storage asset = assets[dealerId];
+        asset.msisdn = msisdn;
+        asset.mpin = mpin;
+        asset.balance = balance;
+        asset.status = status;
+    }
+
+    function updateAsset(string memory dealerId, uint newBalance, string memory newStatus) public {
+        Asset storage asset = assets[dealerId];
+        asset.balance = newBalance;
+        asset.status = newStatus;
+    }
+
+    function getAsset(string memory dealerId) public view returns (string memory msisdn, string memory mpin, uint balance, string memory status) {
+        Asset storage asset = assets[dealerId];
+        return (asset.msisdn, asset.mpin, asset.balance, asset.status);
+    }
+
+    function recordTransaction(string memory dealerId, uint amount, string memory transType, string memory remarks) public {
+        Asset storage asset = assets[dealerId];
+        asset.transactionHistory.push(Transaction({
+            amount: amount,
+            transType: transType,
+            remarks: remarks,
+            timestamp: block.timestamp
+        }));
+    }
+
+    function getTransactionHistory(string memory dealerId) public view returns (Transaction[] memory) {
+        return assets[dealerId].transactionHistory;
+    }
+}
