@@ -1,0 +1,62 @@
+'use strict';
+
+const { Contract } = require('fabric-contract-api');
+
+class AssetContract extends Contract {
+
+    async initLedger(ctx) {
+        console.log('Initializing the ledger');
+    }
+
+    async createAsset(ctx, dealerId, msisdn, mpin, balance, status) {
+        const asset = {
+            dealerId,
+            msisdn,
+            mpin,
+            balance,
+            status,
+            transactionHistory: []
+        };
+        await ctx.stub.putState(dealerId, Buffer.from(JSON.stringify(asset)));
+        return JSON.stringify(asset);
+    }
+
+    async updateAsset(ctx, dealerId, newBalance, newStatus) {
+        const assetAsBytes = await ctx.stub.getState(dealerId);
+        if (!assetAsBytes || assetAsBytes.length === 0) {
+            throw new Error(`Asset ${dealerId} does not exist`);
+        }
+        const asset = JSON.parse(assetAsBytes.toString());
+        asset.balance = newBalance;
+        asset.status = newStatus;
+        await ctx.stub.putState(dealerId, Buffer.from(JSON.stringify(asset)));
+        return JSON.stringify(asset);
+    }
+
+    async queryAsset(ctx, dealerId) {
+        const assetAsBytes = await ctx.stub.getState(dealerId);
+        if (!assetAsBytes || assetAsBytes.length === 0) {
+            throw new Error(`Asset ${dealerId} does not exist`);
+        }
+        return assetAsBytes.toString();
+    }
+
+    async recordTransaction(ctx, dealerId, transAmount, transType, remarks) {
+        const assetAsBytes = await ctx.stub.getState(dealerId);
+        if (!assetAsBytes || assetAsBytes.length === 0) {
+            throw new Error(`Asset ${dealerId} does not exist`);
+        }
+        const asset = JSON.parse(assetAsBytes.toString());
+        const transaction = {
+            transAmount,
+            transType,
+            remarks,
+            timestamp: new Date().toISOString()
+        };
+        asset.transactionHistory.push(transaction);
+        await ctx.stub.putState(dealerId, Buffer.from(JSON.stringify(asset)));
+        return JSON.stringify(asset);
+    }
+}
+
+module.exports = AssetContract;
