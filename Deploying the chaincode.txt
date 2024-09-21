@@ -1,0 +1,12 @@
+async function createAsset(ctx, dealerId, msisdn, mpin, balance, status) {
+    const asset = {
+        dealerId,
+        msisdn,
+        mpin,
+        balance,
+        status,
+        transactionHistory: []
+    };
+    await ctx.stub.putState(dealerId, Buffer.from(JSON.stringify(asset)));
+    return JSON.stringify(asset);
+}
