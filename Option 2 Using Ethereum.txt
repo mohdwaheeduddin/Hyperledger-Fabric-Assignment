@@ -52,4 +52,5 @@ contract AssetManagement {
     function getTransactionHistory(string memory dealerId) public view returns (Transaction[] memory) {
         return assets[dealerId].transactionHistory;
     }
+
 }
