@@ -1,0 +1,33 @@
+
+const Web3 = require('web3');
+const { abi, evm } = require('./AssetManagement.json'); // ABI and Bytecode from the compiled contract
+
+const web3 = new Web3('http://localhost:8545'); // Replace with your Ethereum node URL
+const contractAddress = '0xYourContractAddress'; // Replace with your deployed contract address
+const contract = new web3.eth.Contract(abi, contractAddress);
+
+async function main() {
+    const accounts = await web3.eth.getAccounts();
+
+    // Create an asset
+    await contract.methods.createAsset('dealer1', 'msisdn123', 'mpin123', 1000, 'active').send({ from: accounts[0] });
+    console.log('Asset created');
+
+    // Update an asset
+    await contract.methods.updateAsset('dealer1', 1500, 'inactive').send({ from: accounts[0] });
+    console.log('Asset updated');
+
+    // Get an asset
+    const asset = await contract.methods.getAsset('dealer1').call();
+    console.log(`Asset: ${asset}`);
+
+    // Record a transaction
+    await contract.methods.recordTransaction('dealer1', 100, 'credit', 'Initial deposit').send({ from: accounts[0] });
+    console.log('Transaction recorded');
+
+    // Get transaction history
+    const transactions = await contract.methods.getTransactionHistory('dealer1').call();
+    console.log(`Transactions: ${JSON.stringify(transactions)}`);
+}
+
+main().catch(console.error);
